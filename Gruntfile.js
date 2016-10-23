@@ -5,6 +5,7 @@ module.exports = function(grunt) {
     //  Copy
     copy: {
       dist: { cwd: 'fonts', src: [ '**' ], dest: 'dist/fonts', expand: true },
+	  temp: { cwd: 'temp/js', src: [ '**' ], dest: 'bin', expand: true },
     },
 
     //  Jasmine
@@ -217,7 +218,7 @@ module.exports = function(grunt) {
       },
       bin: {
         files: {
-          'bin/materialize.js': ['temp/js/materialize.js']
+          'bin/materialize.min.js': ['temp/js/materialize.js']
         }
       },
       extras: {
@@ -593,7 +594,7 @@ module.exports = function(grunt) {
   );
 
   grunt.registerTask('jade_compile', ['jade', 'notify:jade_compile']);
-  grunt.registerTask('js_compile', ['concat:temp', 'uglify:bin', 'notify:js_compile', 'clean:temp']);
+  grunt.registerTask('js_compile', ['concat:temp', 'copy:temp', 'uglify:bin', 'notify:js_compile', 'clean:temp']);
   grunt.registerTask('sass_compile', ['sass:gh', 'sass:bin', 'postcss:gh', 'postcss:bin', 'notify:sass_compile']);
   grunt.registerTask('server', ['browserSync', 'notify:server']);
   grunt.registerTask('lint', ['removelogging:source']);

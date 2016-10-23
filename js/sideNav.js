@@ -40,15 +40,21 @@
 
         // If fixed sidenav, bring menu out
         if (menu_id.hasClass('fixed')) {
-            if (window.innerWidth > 992) {
+          if (options.edge == 'left') {
+			if (window.innerWidth > 600) {
               menu_id.css('transform', 'translateX(0)');
-            }
-          }
+			}
+          } else {
+			if (window.innerWidth > 992) {
+			  menu_id.css('transform', 'translateX(0)');
+			}
+		  }
+        }
 
         // Window resize to reset on large screens fixed
         if (menu_id.hasClass('fixed')) {
           $(window).resize( function() {
-            if (window.innerWidth > 992) {
+            if ((window.innerWidth > 600 && options.edge == 'left') || (window.innerWidth > 992 && options.edge == 'right')) {
               // Close menu if window is resized bigger than 992 and user has fixed sidenav
               if ($('#sidenav-overlay').length !== 0 && menuOut) {
                 removeMenu(true);
@@ -74,7 +80,9 @@
         // if closeOnClick, then add close event for all a tags in side sideNav
         if (options.closeOnClick === true) {
           menu_id.on("click.itemclick", "a:not(.collapsible-header)", function(){
-            removeMenu();
+            if (window.innerWidth < 993) {
+              removeMenu();
+			}
           });
         }
 
