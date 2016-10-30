@@ -2062,33 +2062,34 @@ $(document).ready(function(){
 
     // Allows timer to be pause while being panned
     var timeLeft = displayLength;
-    var counterInterval = setInterval (function(){
+    var counterInterval;
+    if (timeLeft != null)  {
+      counterInterval = setInterval (function(){
+        if (newToast.parentNode === null)
+          window.clearInterval(counterInterval);
 
+        // If toast is not being dragged, decrease its time remaining
+        if (!newToast.classList.contains('panning')) {
+          timeLeft -= 20;
+        }
 
-      if (newToast.parentNode === null)
-        window.clearInterval(counterInterval);
-
-      // If toast is not being dragged, decrease its time remaining
-      if (!newToast.classList.contains('panning')) {
-        timeLeft -= 20;
-      }
-
-      if (timeLeft <= 0) {
-        // Animate toast out
-        Vel(newToast, {"opacity": 0, marginTop: '-40px'}, { duration: 375,
-            easing: 'easeOutExpo',
-            queue: false,
-            complete: function(){
-              // Call the optional callback
-              if(typeof(completeCallback) === "function")
-                completeCallback();
-              // Remove toast after it times out
-              this[0].parentNode.removeChild(this[0]);
-            }
-          });
-        window.clearInterval(counterInterval);
-      }
-    }, 20);
+        if (timeLeft <= 0) {
+          // Animate toast out
+          Vel(newToast, {"opacity": 0, marginTop: '-40px'}, { duration: 375,
+              easing: 'easeOutExpo',
+              queue: false,
+              complete: function(){
+                // Call the optional callback
+                if(typeof(completeCallback) === "function")
+                  completeCallback();
+                // Remove toast after it times out
+                this[0].parentNode.removeChild(this[0]);
+              }
+            });
+          window.clearInterval(counterInterval);
+        }
+      }, 20);
+    }
 
 
 
@@ -2115,7 +2116,7 @@ $(document).ready(function(){
         }
         else {
           // Insert as text;
-          toast.innerHTML = html; 
+          toast.innerHTML = html;
         }
         // Bind hammer
         var hammerHandler = new Hammer(toast, {prevent_default: false});
@@ -2607,7 +2608,7 @@ $(document).ready(function(){
 	/**
 	 * Called when the user scrolls the window
 	 */
-	function onScroll() {
+	function onScroll(scrollOffset) {
 		// unique tick id
 		++ticks;
 
@@ -2618,8 +2619,7 @@ $(document).ready(function(){
 			bottom = top + jWindow.height();
 
 		// determine which elements are in view
-//        + 60 accounts for fixed nav
-		var intersections = findElements(top+offset.top + 200, right+offset.right, bottom+offset.bottom, left+offset.left);
+		var intersections = findElements(top+offset.top + scrollOffset || 200, right+offset.right, bottom+offset.bottom, left+offset.left);
 		$.each(intersections, function(i, element) {
 
 			var lastTick = element.data('scrollSpy:ticks');
@@ -2741,7 +2741,9 @@ $(document).ready(function(){
 		offset.bottom = options.offsetBottom || 0;
 		offset.left = options.offsetLeft || 0;
 
-		var throttledScroll = throttle(onScroll, options.throttle || 100);
+		var throttledScroll = throttle(function() {
+			onScroll(options.scrollOffset);
+		}, options.throttle || 100);
 		var readyScroll = function(){
 			$(document).ready(throttledScroll);
 		};
