@@ -1,48 +1,47 @@
 (function($) {
-
-  // Input: Array of JSON objects {selector, offset, callback}
-
-  Materialize.scrollFire = function(options) {
-
-    var didScroll = false;
-
-    window.addEventListener("scroll", function() {
-      didScroll = true;
-    });
-
-    // Rate limit to 100ms
-    setInterval(function() {
-      if(didScroll) {
-          didScroll = false;
-
-          var windowScroll = window.pageYOffset + window.innerHeight;
-
-          for (var i = 0 ; i < options.length; i++) {
-            // Get options from each line
-            var value = options[i];
-            var selector = value.selector,
-                offset = value.offset,
-                callback = value.callback;
-
-            var currentElement = document.querySelector(selector);
-            if ( currentElement !== null) {
-              var elementOffset = currentElement.getBoundingClientRect().top + window.pageYOffset;
-
-              if (windowScroll > (elementOffset + offset)) {
-                if (value.done !== true) {
-                  if (typeof(callback) === 'function') {
-                    callback.call(this, currentElement);
-                  } else if (typeof(callback) === 'string') {
-                    var callbackFunc = new Function(callback);
-                    callbackFunc(currentElement);
-                  }
-                  value.done = true;
-                }
-              }
-            }
-          }
-      }
-    }, 100);
-  };
-
+	Materialize.scrollFire = function(options) {
+		var lastScrolledPixels = 0;
+		var didScroll = false;
+		
+		window.addEventListener("scroll", function() {
+			didScroll = true;
+			
+			var timer = setInterval(function() {
+				clearInterval(timer);
+				
+				if (didScroll) {
+					didScroll = false;
+					
+					var scrolledPixels = window.pageYOffset;
+					
+					for (var i = 0; i < options.length; i++) {
+						var value = options[i];
+						var selector = value.selector,
+							offset = value.offset,
+							downcallback = value.downScrollCallback,
+							upcallback = value.upScrollCallback;
+						var currentElement = document.querySelector(selector);
+						
+						if (currentElement !== null) {
+							var elementOffset = currentElement.getBoundingClientRect().top + document.body.scrollTop;
+							
+							if (lastScrolledPixels < scrolledPixels) {
+								if (elementOffset < offset && value.lastDirection != 'down') {
+									downcallback();
+									value.lastDirection = 'down';
+								}
+							} else {
+								if (elementOffset > offset && value.lastDirection != 'up') {
+									upcallback();
+									value.lastDirection = 'up';
+								}
+							}
+							
+							lastScrolledPixels = scrolledPixels;
+						}
+					}
+				}
+			}, 100);
+		});
+	};
 })(jQuery);
